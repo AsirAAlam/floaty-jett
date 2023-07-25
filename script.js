@@ -76,7 +76,7 @@ addEventListener('keydown', (event) => {
       keysPressed.up = true;
 
       if (p.jumpCount < 2) {
-        p.velocity.y -= playerJump;
+        p.velocity.y = -playerJump;
         p.jumpCount++;
       }
       break;

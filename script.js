@@ -5,10 +5,10 @@ canvas.width = 1280;
 canvas.height = 720;
 
 const gravity = 0.2;
-const playerSpeed = 5;
-const playerJump = 10;
+const scrollXLimit = 1500;
+var scrollX = 0;
 
-const scrollLimit = {
+const scrollStart = {
   left: Math.floor(canvas.width / 8),
   right: Math.floor(canvas.width / 2),
 }
@@ -30,13 +30,15 @@ const keys = {
 
 class Player {
   static img = document.getElementById('jett');
+  static playerJump = 10;
+  static playerSpeed = 5;
 
   constructor() {
-    this.position = {
-      x: scrollLimit.left,
+    this.pos = {
+      x: scrollStart.left,
       y: 100
     }
-    this.velocity = {
+    this.vel = {
       x: 0,
       y: 0
     }
@@ -44,32 +46,32 @@ class Player {
     this.height = 50;
     this.jumpCount = 0;
   }
-  d
+
   draw() {
-    c.drawImage(Player.img, this.position.x, this.position.y, this.width, this.height);
+    c.drawImage(Player.img, this.pos.x, this.pos.y, this.width, this.height);
   }
 
   update() {
     // Horizontal movement
     if (keys.right.pressed) {
-      this.velocity.x = playerSpeed;
+      this.vel.x = Player.playerSpeed;
     } else if (keys.left.pressed) {
-      this.velocity.x = -playerSpeed;
+      this.vel.x = -Player.playerSpeed;
     }
 
     if (keys.right.pressed === keys.left.pressed) {
-      this.velocity.x = 0;
+      this.vel.x = 0;
     }
 
-    this.position.x += this.velocity.x;
+    this.pos.x += this.vel.x;
 
     // Vertical movement + gravity
-    if (this.position.y + this.height + this.velocity.y < canvas.height) {
-      this.position.y += this.velocity.y;
-      this.velocity.y += gravity;
+    if (this.pos.y + this.height + this.vel.y < canvas.height) {
+      this.pos.y += this.vel.y;
+      this.vel.y += gravity;
     } else {
-      this.position.y = canvas.height - this.height;
-      this.velocity.y = 0;
+      this.pos.y = canvas.height - this.height;
+      this.vel.y = 0;
       this.jumpCount = 0;
     }
   }
@@ -79,48 +81,59 @@ class Platform {
   static img = document.getElementById('platform');
 
   constructor(x, y) {
-    this.position = {
+    this.pos = {
       x,
       y
     }
   }
 
   draw() {
-    c.drawImage(Platform.img, this.position.x, this.position.y);
+    c.drawImage(Platform.img, this.pos.x, this.pos.y);
   }
 }
 
 const p = new Player();
 const platforms = [
-  new Platform(-1, 600), 
-  new Platform(580 - 3, 600), 
-  new Platform(2 * 580 - 5, 600),
-  new Platform(500, 300)
+  new Platform(500, 400),
+  new Platform(1200, 150),
 ];
+
+for (let i = 0; i < 6; i++) {
+  platforms.push(new Platform(i * Platform.img.width - 2 * i - 1, canvas.height - Platform.img.height));
+}
 
 function animate() {
   requestAnimationFrame(animate);
 
+  // Platform collision
   platforms.forEach(platform => {
-    // Platform collision
-    if (p.position.y + p.height < platform.position.y &&
-      p.position.y + p.height + p.velocity.y >= platform.position.y &&
-      p.position.x + p.width >= platform.position.x &&
-      p.position.x <= platform.position.x + Platform.img.width) {
-      p.velocity.y = 0;
+    if (p.pos.y + p.height < platform.pos.y &&
+      p.pos.y + p.height + p.vel.y >= platform.pos.y &&
+      p.pos.x + p.width >= platform.pos.x &&
+      p.pos.x <= platform.pos.x + Platform.img.width) {
+      p.vel.y = 0;
       p.jumpCount = 0;
     }
-
-  })
+  });
 
   p.update();
 
   // Platform / background scrolling
-  const scrollX = p.position.x > scrollLimit.right ? p.position.x - scrollLimit.right :
-    (p.position.x < scrollLimit.left ? p.position.x - scrollLimit.left : 0);
+  const scrollXChange = p.pos.x > scrollStart.right ? p.pos.x - scrollStart.right :
+    (p.pos.x < scrollStart.left ? p.pos.x - scrollStart.left : 0);
 
-  platforms.forEach(platform => platform.position.x -= scrollX);
-  p.position.x -= scrollX;
+  if (scrollX + scrollXChange >= 0 && scrollX + scrollXChange <= scrollXLimit) {
+    scrollX += scrollXChange;
+
+    platforms.forEach(platform => platform.pos.x -= scrollXChange);
+  }
+
+  if (scrollX > 0 && scrollX < scrollXLimit) {
+    p.pos.x -= scrollXChange;
+  }
+
+  p.pos.x = Math.max(p.pos.x, 0);
+  p.pos.x = Math.min(p.pos.x, canvas.width - p.width);
 
   // Clear objects from last frame
   c.fillStyle = 'white';
@@ -138,7 +151,7 @@ addEventListener('keydown', (event) => {
         keys.up.pressed = true;
 
         if (p.jumpCount < 2) {
-          p.velocity.y = -playerJump;
+          p.vel.y = -Player.playerJump;
           p.jumpCount++;
         }
       }

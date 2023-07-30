@@ -23,11 +23,7 @@
     transform: translate(-50%, -50%);
   }
 
-  #platform {
-    display: none;
-  }
-
-  #jett {
+  .hide {
     display: none;
   }
 </style>
@@ -36,8 +32,9 @@
   <canvas></canvas>
   <script type='module' src="script.js"></script>
   <image id="good-luck" src="good-luck.gif">
-  <image id="platform" src="platform.png">
-  <image id="jett" src="jett-mcdonalds_256x256.png">
+
+  <image id="platform" class="hide" src="platform.png">
+  <image id="jett" class="hide" src="jett-mcdonalds_256x256.png">
 </body>
 
 </html>

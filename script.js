@@ -163,4 +163,9 @@ addEventListener('keyup', (event) => {
   }
 });
 
+addEventListener('keydown', () => {
+  document.getElementById('good-luck').style.opacity = 0;
+  console.log(123);
+}, { once: true });
+
 animate();

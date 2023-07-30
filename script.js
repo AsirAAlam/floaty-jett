@@ -75,33 +75,33 @@ class Player {
 }
 
 class Platform {
-  constructor(x, y, width = 200, height = 20) {
+  static img = document.getElementById('platform');
+
+  constructor(x, y) {
     this.position = {
       x,
       y
     }
-    this.width = width;
-    this.height = height;
   }
 
   draw() {
-    c.fillStyle = 'blue';
-    c.fillRect(this.position.x, this.position.y, this.width, this.height);
+    c.drawImage(Platform.img, this.position.x, this.position.y);
   }
 }
 
 const p = new Player();
-const platforms = [new Platform(200, 600), new Platform(500, 500)];
+const platforms = [new Platform(200, 600), new Platform(800, 300)];
 
 function animate() {
   requestAnimationFrame(animate);
+
 
   platforms.forEach(platform => {
     // Platform collision
     if (p.position.y + p.height < platform.position.y &&
       p.position.y + p.height + p.velocity.y >= platform.position.y &&
       p.position.x + p.width >= platform.position.x &&
-      p.position.x <= platform.position.x + platform.width) {
+      p.position.x <= platform.position.x + Platform.img.width) {
       p.velocity.y = 0;
       p.jumpCount = 0;
     }
@@ -166,9 +166,9 @@ addEventListener('keyup', (event) => {
   }
 });
 
+// Hide good luck gif on key pressdw
 addEventListener('keydown', () => {
   document.getElementById('good-luck').style.opacity = 0;
-  console.log(123);
 }, { once: true });
 
 animate();

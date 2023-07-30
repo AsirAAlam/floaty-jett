@@ -1,8 +1,8 @@
 const canvas = document.querySelector('canvas');
 const c = canvas.getContext('2d');
 
-canvas.width = innerWidth
-canvas.height = innerHeight
+canvas.width = 1280;
+canvas.height = 720;
 
 const gravity = 0.2;
 const playerSpeed = 5;
@@ -29,23 +29,24 @@ const keys = {
 }
 
 class Player {
+  static img = document.getElementById('jett');
+
   constructor() {
     this.position = {
-      x: 100,
+      x: scrollLimit.left,
       y: 100
     }
     this.velocity = {
       x: 0,
       y: 0
     }
-    this.width = 30;
-    this.height = 30;
+    this.width = 50;
+    this.height = 50;
     this.jumpCount = 0;
   }
-
+  d
   draw() {
-    c.fillStyle = 'red';
-    c.fillRect(this.position.x, this.position.y, this.width, this.height);
+    c.drawImage(Player.img, this.position.x, this.position.y, this.width, this.height);
   }
 
   update() {
@@ -90,11 +91,15 @@ class Platform {
 }
 
 const p = new Player();
-const platforms = [new Platform(200, 600), new Platform(800, 300)];
+const platforms = [
+  new Platform(-1, 600), 
+  new Platform(580 - 3, 600), 
+  new Platform(2 * 580 - 5, 600),
+  new Platform(500, 300)
+];
 
 function animate() {
   requestAnimationFrame(animate);
-
 
   platforms.forEach(platform => {
     // Platform collision
@@ -118,7 +123,8 @@ function animate() {
   p.position.x -= scrollX;
 
   // Clear objects from last frame
-  c.clearRect(0, 0, canvas.width, canvas.height);
+  c.fillStyle = 'white';
+  c.fillRect(0, 0, canvas.width, canvas.height);
 
   // Draw objects from next frame
   platforms.forEach(platform => platform.draw());

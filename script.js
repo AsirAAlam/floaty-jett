@@ -75,13 +75,13 @@ class Player {
 }
 
 class Platform {
-  constructor() {
+  constructor(x, y, width = 200, height = 20) {
     this.position = {
-      x: 200,
-      y: 500,
+      x,
+      y
     }
-    this.width = 200;
-    this.height = 20;
+    this.width = width;
+    this.height = height;
   }
 
   draw() {
@@ -91,19 +91,22 @@ class Platform {
 }
 
 const p = new Player();
-const platform = new Platform();
+const platforms = [new Platform(200, 600), new Platform(500, 500)];
 
 function animate() {
   requestAnimationFrame(animate);
 
-  // Platform collision
-  if (p.position.y + p.height < platform.position.y &&
-    p.position.y + p.height + p.velocity.y >= platform.position.y &&
-    p.position.x + p.width >= platform.position.x &&
-    p.position.x <= platform.position.x + platform.width) {
-    p.velocity.y = 0;
-    p.jumpCount = 0;
-  }
+  platforms.forEach(platform => {
+    // Platform collision
+    if (p.position.y + p.height < platform.position.y &&
+      p.position.y + p.height + p.velocity.y >= platform.position.y &&
+      p.position.x + p.width >= platform.position.x &&
+      p.position.x <= platform.position.x + platform.width) {
+      p.velocity.y = 0;
+      p.jumpCount = 0;
+    }
+
+  })
 
   p.update();
 
@@ -111,14 +114,14 @@ function animate() {
   const scrollX = p.position.x > scrollLimit.right ? p.position.x - scrollLimit.right :
     (p.position.x < scrollLimit.left ? p.position.x - scrollLimit.left : 0);
 
-  platform.position.x -= scrollX;
+  platforms.forEach(platform => platform.position.x -= scrollX);
   p.position.x -= scrollX;
 
   // Clear objects from last frame
   c.clearRect(0, 0, canvas.width, canvas.height);
 
   // Draw objects from next frame
-  platform.draw();
+  platforms.forEach(platform => platform.draw());
   p.draw();
 }
 

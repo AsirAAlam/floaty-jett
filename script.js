@@ -5,7 +5,7 @@ canvas.width = 1280;
 canvas.height = 720;
 
 const gravity = 0.2;
-const scrollXLimit = 1500;
+const scrollXLimit = 2000;
 var scrollX = 0;
 
 const scrollStart = {
@@ -92,11 +92,27 @@ class Platform {
   }
 }
 
+class GenericObject {
+  constructor(x, y, img) {
+    this.pos = {
+      x,
+      y
+    }
+    this.img = img;
+  }
+
+  draw() {
+    c.drawImage(this.img, this.pos.x, this.pos.y);
+  }
+}
+
 const p = new Player();
 const platforms = [
-  new Platform(500, 400),
+  new Platform(600, 400),
   new Platform(1200, 150),
 ];
+const background = new GenericObject(-1, -1, document.getElementById('background'));
+const hills = new GenericObject(0, 20, document.getElementById('hills'));
 
 for (let i = 0; i < 6; i++) {
   platforms.push(new Platform(i * Platform.img.width - 2 * i - 1, canvas.height - Platform.img.height));
@@ -126,6 +142,7 @@ function animate() {
     scrollX += scrollXChange;
 
     platforms.forEach(platform => platform.pos.x -= scrollXChange);
+    hills.pos.x -= Math.floor(scrollXChange / 2);
   }
 
   if (scrollX > 0 && scrollX < scrollXLimit) {
@@ -138,8 +155,10 @@ function animate() {
   // Clear objects from last frame
   c.fillStyle = 'white';
   c.fillRect(0, 0, canvas.width, canvas.height);
-
+  
   // Draw objects from next frame
+  background.draw();
+  hills.draw();
   platforms.forEach(platform => platform.draw());
   p.draw();
 }

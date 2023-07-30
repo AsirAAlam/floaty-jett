@@ -8,11 +8,24 @@ const gravity = 0.2;
 const playerSpeed = 5;
 const playerJump = 10;
 
-const keysPressed = {
-  up: false,
-  left: false,
-  down: false,
-  right: false
+const scrollLimit = {
+  left: Math.floor(canvas.width / 8),
+  right: Math.floor(canvas.width / 2),
+}
+
+const keys = {
+  up: {
+    pressed: false,
+  },
+  down: {
+    pressed: false,
+  },
+  left: {
+    pressed: false,
+  },
+  right: {
+    pressed: false,
+  },
 }
 
 class Player {
@@ -36,14 +49,20 @@ class Player {
   }
 
   update() {
-    if (keysPressed.right) {
+    // Horizontal movement
+    if (keys.right.pressed) {
       this.velocity.x = playerSpeed;
-    } else if (keysPressed.left) {
+    } else if (keys.left.pressed) {
       this.velocity.x = -playerSpeed;
-    } else {
+    }
+
+    if (keys.right.pressed === keys.left.pressed) {
       this.velocity.x = 0;
     }
 
+    this.position.x += this.velocity.x;
+
+    // Vertical movement + gravity
     if (this.position.y + this.height + this.velocity.y < canvas.height) {
       this.position.y += this.velocity.y;
       this.velocity.y += gravity;
@@ -52,42 +71,77 @@ class Player {
       this.velocity.y = 0;
       this.jumpCount = 0;
     }
+  }
+}
 
-    this.position.x += this.velocity.x;
+class Platform {
+  constructor() {
+    this.position = {
+      x: 200,
+      y: 500,
+    }
+    this.width = 200;
+    this.height = 20;
+  }
 
-    // console.log(p.jumpCount, p.velocity.y);
-
-    this.draw();
+  draw() {
+    c.fillStyle = 'blue';
+    c.fillRect(this.position.x, this.position.y, this.width, this.height);
   }
 }
 
 const p = new Player();
+const platform = new Platform();
 
 function animate() {
   requestAnimationFrame(animate);
 
-  c.clearRect(0, 0, canvas.width, canvas.height);
+  // Platform collision
+  if (p.position.y + p.height < platform.position.y &&
+    p.position.y + p.height + p.velocity.y >= platform.position.y &&
+    p.position.x + p.width >= platform.position.x &&
+    p.position.x <= platform.position.x + platform.width) {
+    p.velocity.y = 0;
+    p.jumpCount = 0;
+  }
+
   p.update();
+
+  // Platform / background scrolling
+  const scrollX = p.position.x > scrollLimit.right ? p.position.x - scrollLimit.right :
+    (p.position.x < scrollLimit.left ? p.position.x - scrollLimit.left : 0);
+
+  platform.position.x -= scrollX;
+  p.position.x -= scrollX;
+
+  // Clear objects from last frame
+  c.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Draw objects from next frame
+  platform.draw();
+  p.draw();
 }
 
 addEventListener('keydown', (event) => {
   switch (event.key) {
     case 'w':
-      keysPressed.up = true;
+      if (!keys.up.pressed) {
+        keys.up.pressed = true;
 
-      if (p.jumpCount < 2) {
-        p.velocity.y = -playerJump;
-        p.jumpCount++;
+        if (p.jumpCount < 2) {
+          p.velocity.y = -playerJump;
+          p.jumpCount++;
+        }
       }
       break;
     case 'a':
-      keysPressed.left = true;
+      keys.left.pressed = true;
       break;
     case 's':
-      keysPressed.down = true;
+      keys.down.pressed = true;
       break;
     case 'd':
-      keysPressed.right = true;
+      keys.right.pressed = true;
       break;
   }
 });
@@ -95,16 +149,16 @@ addEventListener('keydown', (event) => {
 addEventListener('keyup', (event) => {
   switch (event.key) {
     case 'w':
-      keysPressed.up = false;
+      keys.up.pressed = false;
       break;
     case 'a':
-      keysPressed.left = false;
+      keys.left.pressed = false;
       break;
     case 's':
-      keysPressed.down = false;
+      keys.down.pressed = false;
       break;
     case 'd':
-      keysPressed.right = false;
+      keys.right.pressed = false;
       break;
   }
 });

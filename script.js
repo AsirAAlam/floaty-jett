@@ -114,8 +114,10 @@ const platforms = [
 const background = new GenericObject(-1, -1, document.getElementById('background'));
 const hills = new GenericObject(0, 20, document.getElementById('hills'));
 
-for (let i = 0; i < 6; i++) {
-  platforms.push(new Platform(i * Platform.img.width - 2 * i - 1, canvas.height - Platform.img.height));
+Platform.img.onload = () => {
+  for (let i = 0; i < 6; i++) {
+    platforms.push(new Platform(i * Platform.img.width - 2 * i - 1, canvas.height - Platform.img.height));
+  }
 }
 
 function animate() {
@@ -155,7 +157,7 @@ function animate() {
   // Clear objects from last frame
   c.fillStyle = 'white';
   c.fillRect(0, 0, canvas.width, canvas.height);
-  
+
   // Draw objects from next frame
   background.draw();
   hills.draw();
@@ -204,9 +206,9 @@ addEventListener('keyup', (event) => {
   }
 });
 
-// Hide good luck gif on key pressdw
+// Hide good luck gif on key press
 addEventListener('keydown', () => {
-  document.getElementById('good-luck').style.opacity = 0;
+  document.getElementById('good-luck').style.display = 'none';
 }, { once: true });
 
 animate();

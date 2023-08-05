@@ -83,8 +83,11 @@ class Player {
   }
 }
 
+const platformImg = new Image();
+platformImg.src = './platform.png';
+
 class Platform {
-  static img = document.getElementById('platform');
+  static img = platformImg;
 
   constructor(x, y, isFloor = false) {
     this.pos = {
@@ -125,6 +128,9 @@ const background = new GenericObject(-1, -1, document.getElementById('background
 const hills = new GenericObject(0, 20, document.getElementById('hills'));
 
 Platform.img.onload = () => {
+  console.log(Platform.img);
+  console.log(Platform.img.width);
+  console.log(Platform.img.height);
   for (let i = 0; i < 6; i++) {
     platforms.push(new Platform(i * Platform.img.width - 2 * i - 1, canvas.height - Platform.img.height, true));
   }

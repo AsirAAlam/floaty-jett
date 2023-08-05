@@ -12,7 +12,7 @@ backgroundImg.src = './images/background.png';
 const hillsImg = new Image();
 hillsImg.src = './images/hills.png';
 
-const gravity = 0.2;
+const gravity = 0.75;
 const scrollXLimit = 2000;
 var scrollX = 0;
 
@@ -39,8 +39,8 @@ const keys = {
 
 class Player {
   static img = playerImg;
-  static playerJump = 10;
-  static playerSpeed = 5;
+  static playerJump = 20;
+  static playerSpeed = 8;
 
   constructor() {
     this.pos = {
@@ -187,8 +187,8 @@ function animate() {
   p.draw();
 }
 
-var fps = 120;
-var interval = 1000 / fps;
+const fps = 60;
+const interval = 1000 / fps;
 var then;
 
 function draw(timestamp) {

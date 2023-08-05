@@ -110,6 +110,7 @@ const p = new Player();
 const platforms = [
   new Platform(600, 400),
   new Platform(1200, 150),
+  new Platform(1600, 450),
 ];
 const background = new GenericObject(-1, -1, document.getElementById('background'));
 const hills = new GenericObject(0, 20, document.getElementById('hills'));
@@ -205,10 +206,5 @@ addEventListener('keyup', (event) => {
       break;
   }
 });
-
-// Hide good luck gif on key press
-addEventListener('keydown', () => {
-  document.getElementById('good-luck').style.display = 'none';
-}, { once: true });
 
 animate();

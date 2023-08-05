@@ -26,6 +26,7 @@ const keys = {
   right: {
     pressed: false,
   },
+  lastPressedStk: new Array()
 }
 
 class Player {
@@ -53,13 +54,11 @@ class Player {
 
   update() {
     // Horizontal movement
-    if (keys.right.pressed) {
+    if (keys.lastPressedStk[keys.lastPressedStk.length - 1] == 'right') {
       this.vel.x = Player.playerSpeed;
-    } else if (keys.left.pressed) {
+    } else if (keys.lastPressedStk[keys.lastPressedStk.length - 1] == 'left') {
       this.vel.x = -Player.playerSpeed;
-    }
-
-    if (keys.right.pressed === keys.left.pressed) {
+    } else {
       this.vel.x = 0;
     }
 
@@ -179,30 +178,44 @@ addEventListener('keydown', (event) => {
       }
       break;
     case 'a':
-      keys.left.pressed = true;
+      if (!keys.left.pressed) {
+        keys.left.pressed = true;
+        keys.lastPressedStk.push('left');
+      }
       break;
     case 's':
-      keys.down.pressed = true;
+      if (!keys.down.pressed) {
+        keys.down.pressed = true;
+      }
       break;
     case 'd':
-      keys.right.pressed = true;
+      if (!keys.right.pressed) {
+        keys.right.pressed = true;
+        keys.lastPressedStk.push('right');
+      }
       break;
   }
 });
 
 addEventListener('keyup', (event) => {
+  let idxToRemove;
+
   switch (event.key) {
     case 'w':
       keys.up.pressed = false;
       break;
     case 'a':
       keys.left.pressed = false;
+      idxToRemove = keys.lastPressedStk.indexOf('left');
+      keys.lastPressedStk.splice(idxToRemove, 1);
       break;
     case 's':
       keys.down.pressed = false;
       break;
     case 'd':
       keys.right.pressed = false;
+      idxToRemove = keys.lastPressedStk.indexOf('right');
+      keys.lastPressedStk.splice(idxToRemove, 1);
       break;
   }
 });

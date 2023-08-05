@@ -1,7 +1,6 @@
 # Floaty Jett
 
 ## To Do:
-- Fix hill position going out of async
 - Fix you can double jump even if dropped off of platform
 - - Make it so you can only jump once in the air
 - Y scrolling

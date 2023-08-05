@@ -40,7 +40,9 @@ const keys = {
 class Player {
   static img = playerImg;
   static playerJump = 20;
-  static playerSpeed = 8;
+
+  // Must be divisible by scrollXLimit
+  static playerSpeed = 10;
 
   constructor() {
     this.pos = {
@@ -166,7 +168,7 @@ function animate() {
     scrollX += scrollXChange;
 
     platforms.forEach(platform => platform.pos.x -= scrollXChange);
-    hills.pos.x -= Math.floor(scrollXChange / 2);
+    hills.pos.x -= scrollXChange / 2;
   }
 
   if (scrollX > 0 && scrollX < scrollXLimit) {

@@ -125,10 +125,11 @@ function animate() {
 
   // Platform collision
   platforms.forEach(platform => {
-    if (p.pos.y + p.height < platform.pos.y &&
+    if (p.pos.y + p.height <= platform.pos.y &&
       p.pos.y + p.height + p.vel.y >= platform.pos.y &&
       p.pos.x + p.width >= platform.pos.x &&
       p.pos.x <= platform.pos.x + Platform.img.width) {
+      p.pos.y = platform.pos.y - p.height;
       p.vel.y = 0;
       p.jumpCount = 0;
     }

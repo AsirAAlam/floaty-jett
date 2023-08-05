@@ -1,8 +1,16 @@
 const canvas = document.querySelector('canvas');
 const c = canvas.getContext('2d');
-
 canvas.width = 1280;
 canvas.height = 720;
+
+const platformImg = new Image();
+platformImg.src = './images/platform.png';
+const playerImg = new Image();
+playerImg.src = './images/jett-mcdonalds_256x256.png';
+const backgroundImg = new Image();
+backgroundImg.src = './images/background.png';
+const hillsImg = new Image();
+hillsImg.src = './images/hills.png';
 
 const gravity = 0.2;
 const scrollXLimit = 2000;
@@ -30,7 +38,7 @@ const keys = {
 }
 
 class Player {
-  static img = document.getElementById('jett');
+  static img = playerImg;
   static playerJump = 10;
   static playerSpeed = 5;
 
@@ -83,9 +91,6 @@ class Player {
   }
 }
 
-const platformImg = new Image();
-platformImg.src = './platform.png';
-
 class Platform {
   static img = platformImg;
 
@@ -124,13 +129,10 @@ const platforms = [
   new Platform(1600, 450),
 ];
 
-const background = new GenericObject(-1, -1, document.getElementById('background'));
-const hills = new GenericObject(0, 20, document.getElementById('hills'));
+const background = new GenericObject(-1, -1, backgroundImg);
+const hills = new GenericObject(0, 20, hillsImg);
 
 Platform.img.onload = () => {
-  console.log(Platform.img);
-  console.log(Platform.img.width);
-  console.log(Platform.img.height);
   for (let i = 0; i < 6; i++) {
     platforms.push(new Platform(i * Platform.img.width - 2 * i - 1, canvas.height - Platform.img.height, true));
   }

@@ -46,6 +46,8 @@ class Player {
     this.width = 50;
     this.height = 50;
     this.jumpCount = 0;
+    this.downCount = 0;
+    this.onAirPlatform = false;
   }
 
   draw() {
@@ -64,6 +66,11 @@ class Player {
 
     this.pos.x += this.vel.x;
 
+    if (this.onAirPlatform && this.vel.y !== 0) {
+      this.onAirPlatform = false;
+      this.downCount = 0;
+    }
+
     // Vertical movement + gravity
     if (this.pos.y + this.height + this.vel.y < canvas.height) {
       this.pos.y += this.vel.y;
@@ -79,11 +86,12 @@ class Player {
 class Platform {
   static img = document.getElementById('platform');
 
-  constructor(x, y) {
+  constructor(x, y, isFloor = false) {
     this.pos = {
       x,
       y
     }
+    this.isFloor = isFloor;
   }
 
   draw() {
@@ -106,17 +114,19 @@ class GenericObject {
 }
 
 const p = new Player();
+
 const platforms = [
   new Platform(600, 400),
   new Platform(1200, 150),
   new Platform(1600, 450),
 ];
+
 const background = new GenericObject(-1, -1, document.getElementById('background'));
 const hills = new GenericObject(0, 20, document.getElementById('hills'));
 
 Platform.img.onload = () => {
   for (let i = 0; i < 6; i++) {
-    platforms.push(new Platform(i * Platform.img.width - 2 * i - 1, canvas.height - Platform.img.height));
+    platforms.push(new Platform(i * Platform.img.width - 2 * i - 1, canvas.height - Platform.img.height, true));
   }
 }
 
@@ -132,6 +142,11 @@ function animate() {
       p.pos.y = platform.pos.y - p.height;
       p.vel.y = 0;
       p.jumpCount = 0;
+
+      // If this is an air platform and the player is not already on an air platform
+      if (!platform.isFloor && !p.onAirPlatform) {
+        p.onAirPlatform = true;
+      }
     }
   });
 
@@ -182,17 +197,27 @@ addEventListener('keydown', (event) => {
       if (!keys.left.pressed) {
         keys.left.pressed = true;
         keys.lastPressedStk.push('left');
+        p.downCount = 0;
       }
       break;
     case 's':
       if (!keys.down.pressed) {
         keys.down.pressed = true;
+
+        if (p.onAirPlatform) {
+          p.downCount++;
+
+          if (p.downCount === 2) {
+            p.pos.y++;
+          }
+        }
       }
       break;
     case 'd':
       if (!keys.right.pressed) {
         keys.right.pressed = true;
         keys.lastPressedStk.push('right');
+        p.downCount = 0;
       }
       break;
   }

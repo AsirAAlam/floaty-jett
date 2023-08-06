@@ -10,3 +10,11 @@ body {
 .hide {
   display: none;
 }
+
+.deb {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  color: white;
+  display: none;
+}

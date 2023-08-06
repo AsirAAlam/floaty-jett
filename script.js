@@ -15,10 +15,16 @@ hillsImg.src = './images/hills.png';
 const gravity = 0.75;
 const scrollXLimit = 2000;
 var scrollX = 0;
+const scrollYLimit = -1000;
+var scrollY = 0;
+
+var debug = false;
 
 const scrollStart = {
   left: Math.floor(canvas.width / 8),
   right: Math.floor(canvas.width / 2),
+  up: Math.floor(canvas.height / 7),
+  down: canvas.height
 }
 
 const keys = {
@@ -45,9 +51,10 @@ class Player {
   static playerSpeed = 10;
 
   constructor() {
+    // Must be inside the scroll limits
     this.pos = {
       x: scrollStart.left,
-      y: 100
+      y: scrollStart.up
     }
     this.vel = {
       x: 0,
@@ -135,6 +142,7 @@ const background = new GenericObject(-1, -1, backgroundImg);
 const hills = new GenericObject(0, 20, hillsImg);
 
 Platform.img.onload = () => {
+  scrollStart.down = canvas.height - Platform.img.height - p.height;
   for (let i = 0; i < 6; i++) {
     platforms.push(new Platform(i * Platform.img.width - 2 * i - 1, canvas.height - Platform.img.height, true));
   }
@@ -177,6 +185,26 @@ function animate() {
 
   p.pos.x = Math.max(p.pos.x, 0);
   p.pos.x = Math.min(p.pos.x, canvas.width - p.width);
+
+  const scrollYChange = p.pos.y < scrollStart.up ? p.pos.y - scrollStart.up :
+    (p.pos.y > scrollStart.down ? p.pos.y - scrollStart.down : 0);
+
+  if (scrollY + scrollYChange <= 0 && scrollY + scrollYChange >= scrollYLimit) {
+    scrollY += scrollYChange;
+
+    platforms.forEach(platform => platform.pos.y -= scrollYChange);
+    hills.pos.y -= scrollYChange;
+  }
+
+  if (scrollY < 0 && scrollY > scrollYLimit) {
+    p.pos.y -= scrollYChange;
+  }
+
+  const deb = document.getElementById('deb');
+  deb.innerHTML = scrollY;
+
+  p.pos.y = Math.max(p.pos.y, 0);
+  p.pos.y = Math.min(p.pos.y, canvas.height - p.height - Platform.img.height);
 
   // Clear objects from last frame
   c.fillStyle = 'white';
@@ -267,6 +295,18 @@ addEventListener('keydown', (event) => {
         p.downCount = 0;
       }
       break;
+  }
+
+  // Debug mode
+  if (event.key === '.') {
+    const deb = document.getElementById('deb');
+    
+    if (!debug) {
+      deb.style.display = 'block';
+    } else {
+      deb.style.display = 'none';
+    }
+    debug = !debug;
   }
 });
 

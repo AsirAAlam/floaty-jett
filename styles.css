@@ -7,6 +7,14 @@ body {
   height: 100vh;
 }
 
+#instructions {
+  position: absolute;
+  scale: 50%;
+  left: 50%;
+  top: 50%;
+  transform: translate(-100%, -100%);
+}
+
 .hide {
   display: none;
 }

@@ -332,3 +332,7 @@ addEventListener('keyup', (event) => {
       break;
   }
 });
+
+addEventListener('keydown', () => {
+  document.getElementById('instructions').style.display = "none";
+}, { once: true });

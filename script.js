@@ -5,12 +5,13 @@ canvas.height = 720;
 
 const platformImg = new Image();
 platformImg.src = './images/platform.png';
-const playerImg = new Image();
-playerImg.src = './images/jett-mcdonalds_256x256.png';
 const backgroundImg = new Image();
 backgroundImg.src = './images/background.png';
 const hillsImg = new Image();
 hillsImg.src = './images/hills.png';
+const spriteStand = new Image();
+spriteStand.src = './images/jett-stand-sprite.png';
+let spriteAnimationSpeed = 15; // Larger value = slower animation
 
 const gravity = 0.75;
 const scrollXLimit = 2000;
@@ -44,7 +45,6 @@ const keys = {
 }
 
 class Player {
-  static img = playerImg;
   static playerJump = 20;
 
   // Must be divisible by scrollXLimit
@@ -60,18 +60,21 @@ class Player {
       x: 0,
       y: 0
     }
-    this.width = 50;
-    this.height = 50;
+    this.width = 128;
+    this.height = 128;
     this.jumpCount = 0;
     this.downCount = 0;
     this.onAirPlatform = false;
+    this.frameIndex = 0;
   }
 
   draw() {
-    c.drawImage(Player.img, this.pos.x, this.pos.y, this.width, this.height);
+    c.drawImage(spriteStand, Math.floor(this.frameIndex / spriteAnimationSpeed) * 128, 0, 128, 128, this.pos.x, this.pos.y, this.width, this.height);
   }
 
   update() {
+    this.frameIndex = (this.frameIndex + 1) % (4 * spriteAnimationSpeed);
+
     // Horizontal movement
     if (keys.lastPressedStk[keys.lastPressedStk.length - 1] == 'right') {
       this.vel.x = Player.playerSpeed;

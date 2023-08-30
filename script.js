@@ -10,7 +10,7 @@ backgroundImg.src = './images/background.png';
 const hillsImg = new Image();
 hillsImg.src = './images/hills.png';
 const spriteStand = new Image();
-spriteStand.src = './images/jett-stand-sprite.png';
+spriteStand.src = './images/jett-sprite.png';
 let spriteAnimationSpeed = 15; // Larger value = slower animation
 
 const gravity = 0.75;
@@ -66,10 +66,12 @@ class Player {
     this.downCount = 0;
     this.onAirPlatform = false;
     this.frameIndex = 0;
+    this.facing = 'right';
   }
 
   draw() {
-    c.drawImage(spriteStand, Math.floor(this.frameIndex / spriteAnimationSpeed) * 128, 0, 128, 128, this.pos.x, this.pos.y, this.width, this.height);
+    const spriteRowIndex = this.facing == 'right' ? 0 : 1;
+    c.drawImage(spriteStand, Math.floor(this.frameIndex / spriteAnimationSpeed) * 128, spriteRowIndex * 128, 128, 128, this.pos.x, this.pos.y, this.width, this.height);
   }
 
   update() {
@@ -78,8 +80,10 @@ class Player {
     // Horizontal movement
     if (keys.lastPressedStk[keys.lastPressedStk.length - 1] == 'right') {
       this.vel.x = Player.playerSpeed;
+      this.facing = 'right';
     } else if (keys.lastPressedStk[keys.lastPressedStk.length - 1] == 'left') {
       this.vel.x = -Player.playerSpeed;
+      this.facing = 'left';
     } else {
       this.vel.x = 0;
     }
@@ -303,7 +307,7 @@ addEventListener('keydown', (event) => {
   // Debug mode
   if (event.key === '.') {
     const deb = document.getElementById('deb');
-    
+
     if (!debug) {
       deb.style.display = 'block';
     } else {

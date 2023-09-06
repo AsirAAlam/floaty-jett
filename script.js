@@ -4,17 +4,17 @@ canvas.width = 1280;
 canvas.height = 720;
 
 const platformImg = new Image();
-platformImg.src = './images/platform.png';
+platformImg.src = './images/ascent/ascent platform.png';
 const backgroundImg = new Image();
-backgroundImg.src = './images/background.png';
-const hillsImg = new Image();
-hillsImg.src = './images/hills.png';
+backgroundImg.src = './images/ascent/ascent background.png';
+const foregroundImg = new Image();
+foregroundImg.src = './images/ascent/ascent foreground.png';
 const spriteStand = new Image();
 spriteStand.src = './images/jett-sprite.png';
 let spriteAnimationSpeed = 15; // Larger value = slower animation
 
 const gravity = 0.75;
-const scrollXLimit = 2000;
+const scrollXLimit = 6000;
 var scrollX = 0;
 const scrollYLimit = -1000;
 var scrollY = 0;
@@ -142,15 +142,16 @@ const p = new Player();
 const platforms = [
   new Platform(600, 400),
   new Platform(1200, 150),
-  new Platform(1600, 450),
+  new Platform(2000, 150),
 ];
 
-const background = new GenericObject(-1, -1, backgroundImg);
-const hills = new GenericObject(0, 20, hillsImg);
+const background = new GenericObject(0, 0, backgroundImg);
+const foreground = new GenericObject(0, 0, foregroundImg);
 
 Platform.img.onload = () => {
   scrollStart.down = canvas.height - Platform.img.height - p.height;
-  for (let i = 0; i < 6; i++) {
+  const numFloorPlatforms = 15;
+  for (let i = 0; i < numFloorPlatforms; i++) {
     platforms.push(new Platform(i * Platform.img.width - 2 * i - 1, canvas.height - Platform.img.height, true));
   }
 }
@@ -183,7 +184,7 @@ function animate() {
     scrollX += scrollXChange;
 
     platforms.forEach(platform => platform.pos.x -= scrollXChange);
-    hills.pos.x -= scrollXChange / 2;
+    foreground.pos.x -= scrollXChange / 2;
   }
 
   if (scrollX > 0 && scrollX < scrollXLimit) {
@@ -200,7 +201,7 @@ function animate() {
     scrollY += scrollYChange;
 
     platforms.forEach(platform => platform.pos.y -= scrollYChange);
-    hills.pos.y -= scrollYChange;
+    foreground.pos.y -= scrollYChange;
   }
 
   if (scrollY < 0 && scrollY > scrollYLimit) {
@@ -208,7 +209,7 @@ function animate() {
   }
 
   const deb = document.getElementById('deb');
-  deb.innerHTML = scrollY;
+  deb.innerHTML = 'scrollY '+ scrollY + ' ' + 'scrollX ' + scrollX;
 
   p.pos.y = Math.max(p.pos.y, 0);
   p.pos.y = Math.min(p.pos.y, canvas.height - p.height - Platform.img.height);
@@ -219,7 +220,7 @@ function animate() {
 
   // Draw objects from next frame
   background.draw();
-  hills.draw();
+  foreground.draw();
   platforms.forEach(platform => platform.draw());
   p.draw();
 }

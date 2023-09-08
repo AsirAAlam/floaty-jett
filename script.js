@@ -62,11 +62,12 @@ class Player {
     }
     this.width = 128;
     this.height = 128;
-    this.jumpCount = 0;
     this.downCount = 0;
     this.onAirPlatform = false;
+    this.onFloorPlatform = false;
     this.frameIndex = 0;
     this.facing = 'right';
+    this.canAirJump = false;
   }
 
   draw() {
@@ -95,6 +96,10 @@ class Player {
       this.downCount = 0;
     }
 
+    if (this.onFloorPlatform && this.vel.y !== 0) {
+      this.onFloorPlatform = false;
+    }
+
     // Vertical movement + gravity
     if (this.pos.y + this.height + this.vel.y < canvas.height) {
       this.pos.y += this.vel.y;
@@ -102,7 +107,6 @@ class Player {
     } else {
       this.pos.y = canvas.height - this.height;
       this.vel.y = 0;
-      this.jumpCount = 0;
     }
   }
 }
@@ -157,19 +161,31 @@ Platform.img.onload = () => {
 }
 
 function animate() {
+  // The offsets are there to only include the character and not the knives for platform collision
+  const leftX = p.pos.x + 40;
+  const rightX = p.pos.x + p.width - 38;
+  
   // Platform collision
   platforms.forEach(platform => {
     if (p.pos.y + p.height <= platform.pos.y &&
       p.pos.y + p.height + p.vel.y >= platform.pos.y &&
-      p.pos.x + p.width >= platform.pos.x &&
-      p.pos.x <= platform.pos.x + Platform.img.width) {
+      rightX >= platform.pos.x &&
+      leftX <= platform.pos.x + Platform.img.width) {
       p.pos.y = platform.pos.y - p.height;
       p.vel.y = 0;
-      p.jumpCount = 0;
 
       // If this is an air platform and the player is not already on an air platform
       if (!platform.isFloor && !p.onAirPlatform) {
         p.onAirPlatform = true;
+      }
+
+      // If this is a floor platform and the player is not already on a floor platform
+      if (platform.isFloor && !p.onFloorPlatform) {
+        p.onFloorPlatform = true;
+      }
+
+      if (!p.canAirJump) {
+        p.canAirJump = true;
       }
     }
   });
@@ -209,7 +225,7 @@ function animate() {
   }
 
   const deb = document.getElementById('deb');
-  deb.innerHTML = 'scrollY '+ scrollY + ' ' + 'scrollX ' + scrollX;
+  deb.innerHTML = 'scrollY ' + scrollY + ' ' + 'scrollX ' + scrollX + ' ' + 'onFloor ' + p.onFloorPlatform + ' ' + 'onAirPlat ' + p.onAirPlatform;
 
   p.pos.y = Math.max(p.pos.y, 0);
   p.pos.y = Math.min(p.pos.y, canvas.height - p.height - Platform.img.height);
@@ -270,9 +286,11 @@ addEventListener('keydown', (event) => {
       if (!keys.up.pressed) {
         keys.up.pressed = true;
 
-        if (p.jumpCount < 2) {
+        if (p.onAirPlatform || p.onFloorPlatform) {
           p.vel.y = -Player.playerJump;
-          p.jumpCount++;
+        } else if (p.canAirJump) {
+          p.vel.y = -Player.playerJump;
+          p.canAirJump = false;
         }
       }
       break;
@@ -343,4 +361,7 @@ addEventListener('keyup', (event) => {
 
 addEventListener('keydown', () => {
   document.getElementById('instructions').style.display = "none";
+  var audio = new Audio('./audio/valorant-ascent-map-theme-music.mp3');
+  audio.play();
+
 }, { once: true });

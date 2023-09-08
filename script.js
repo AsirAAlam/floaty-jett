@@ -162,8 +162,8 @@ Platform.img.onload = () => {
 
 function animate() {
   // The offsets are there to only include the character and not the knives for platform collision
-  const leftX = p.pos.x + 40;
-  const rightX = p.pos.x + p.width - 38;
+  const leftX = p.pos.x + (p.facing === 'right' ? 40 : 38);
+  const rightX = p.pos.x + p.width - (p.facing === 'right' ? 38 : 40);
   
   // Platform collision
   platforms.forEach(platform => {

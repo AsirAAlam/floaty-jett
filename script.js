@@ -6,9 +6,9 @@ canvas.height = 720;
 const platformImg = new Image();
 platformImg.src = './images/ascent/ascent platform.png';
 const backgroundImg = new Image();
-backgroundImg.src = './images/ascent/ascent background.png';
+backgroundImg.src = './images/ascent/ascent background compressed.png';
 const foregroundImg = new Image();
-foregroundImg.src = './images/ascent/ascent foreground.png';
+foregroundImg.src = './images/ascent/ascent foreground compressed.png';
 const spriteStand = new Image();
 spriteStand.src = './images/jett-sprite.png';
 let spriteAnimationSpeed = 15; // Larger value = slower animation

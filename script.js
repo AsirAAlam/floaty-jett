@@ -46,6 +46,7 @@ const keys = {
 
 class Player {
   static playerJump = 20;
+  static driftGravityReduction = 0.7;
 
   // Must be divisible by scrollXLimit
   static playerSpeed = 10;
@@ -104,6 +105,10 @@ class Player {
     if (this.pos.y + this.height + this.vel.y < canvas.height) {
       this.pos.y += this.vel.y;
       this.vel.y += gravity;
+      if (keys.up.pressed && this.vel.y > 0) {
+        this.vel.y -= Player.driftGravityReduction;
+        this.vel.y = Math.max(0, this.vel.y);
+      }
     } else {
       this.pos.y = canvas.height - this.height;
       this.vel.y = 0;

@@ -9,8 +9,12 @@ const backgroundImg = new Image();
 backgroundImg.src = './images/ascent/ascent background-min.png';
 const foregroundImg = new Image();
 foregroundImg.src = './images/ascent/ascent foreground-min.png';
+const jettFloatRight = new Image();
+jettFloatRight.src = './images/jett/jett-float-right.png';
+const jettFloatLeft = new Image();
+jettFloatLeft.src = './images/jett/jett-float-left.png';
 const spriteStand = new Image();
-spriteStand.src = './images/jett-sprite.png';
+spriteStand.src = './images/jett/jett-sprite.png';
 let spriteAnimationSpeed = 15; // Larger value = slower animation
 
 const gravity = 0.75;
@@ -46,6 +50,7 @@ const keys = {
 
 class Player {
   static playerJump = 20;
+  static driftGravityReduction = 0.7;
 
   // Must be divisible by scrollXLimit
   static playerSpeed = 10;
@@ -70,9 +75,18 @@ class Player {
     this.canAirJump = false;
   }
 
+  inAir() {
+    return !this.onAirPlatform && !this.onFloorPlatform;
+  }
+
   draw() {
-    const spriteRowIndex = this.facing == 'right' ? 0 : 1;
-    c.drawImage(spriteStand, Math.floor(this.frameIndex / spriteAnimationSpeed) * 128, spriteRowIndex * 128, 128, 128, this.pos.x, this.pos.y, this.width, this.height);
+    if (this.inAir()) {
+      const jettFloatImg = this.facing == 'right' ? jettFloatRight : jettFloatLeft;
+      c.drawImage(jettFloatImg, 0, 0, 128, 128, this.pos.x, this.pos.y, this.width, this.height);
+    } else {
+      const spriteRowIndex = this.facing == 'right' ? 0 : 1;
+      c.drawImage(spriteStand, Math.floor(this.frameIndex / spriteAnimationSpeed) * 128, spriteRowIndex * 128, 128, 128, this.pos.x, this.pos.y, this.width, this.height);
+    }
   }
 
   update() {
@@ -104,6 +118,10 @@ class Player {
     if (this.pos.y + this.height + this.vel.y < canvas.height) {
       this.pos.y += this.vel.y;
       this.vel.y += gravity;
+      if (keys.up.pressed && this.vel.y > 0) {
+        this.vel.y -= Player.driftGravityReduction;
+        this.vel.y = Math.max(0, this.vel.y);
+      }
     } else {
       this.pos.y = canvas.height - this.height;
       this.vel.y = 0;
@@ -164,7 +182,7 @@ function animate() {
   // The offsets are there to only include the character and not the knives for platform collision
   const leftX = p.pos.x + (p.facing === 'right' ? 40 : 38);
   const rightX = p.pos.x + p.width - (p.facing === 'right' ? 38 : 40);
-  
+
   // Platform collision
   platforms.forEach(platform => {
     if (p.pos.y + p.height <= platform.pos.y &&

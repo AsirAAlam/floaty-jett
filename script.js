@@ -9,6 +9,10 @@ const backgroundImg = new Image();
 backgroundImg.src = './images/ascent/ascent background-min.png';
 const foregroundImg = new Image();
 foregroundImg.src = './images/ascent/ascent foreground-min.png';
+const knifeRightImg = new Image();
+knifeRightImg.src = './images/jett/knife-right.png';
+const knifeLeftImg = new Image();
+knifeLeftImg.src = './images/jett/knife-left.png';
 const jettFloatRight = new Image();
 jettFloatRight.src = './images/jett/jett-float-right.png';
 const jettFloatLeft = new Image();
@@ -45,7 +49,33 @@ const keys = {
   right: {
     pressed: false,
   },
+  space: {
+    pressed: false,
+  },
   lastPressedStk: new Array()
+}
+
+class Knife {
+  static velx = 30;
+
+  // dir -> {-1, 1}
+  constructor(x, y, dir) {
+    this.pos = {
+      x,
+      y
+    }
+    this.dir = dir;
+    this.distanceTraveled = 0;
+  }
+
+  update() {
+    this.pos.x += Knife.velx * this.dir;
+    this.distanceTraveled += Math.abs(Knife.velx * this.dir);
+  }
+
+  draw() {
+    c.drawImage(this.dir === 1 ? knifeRightImg : knifeLeftImg, this.pos.x, this.pos.y);
+  }
 }
 
 class Player {
@@ -73,6 +103,11 @@ class Player {
     this.frameIndex = 0;
     this.facing = 'right';
     this.canAirJump = false;
+    this.knives = [];
+  }
+
+  createKnife() {
+    this.knives.push(new Knife(this.pos.x + this.width / 2, this.pos.y + this.height / 2, this.facing === 'right' ? 1 : -1));
   }
 
   inAir() {
@@ -210,6 +245,11 @@ function animate() {
 
   p.update();
 
+  // Update knives
+  p.knives.forEach(knife => {
+    knife.update();
+  });
+
   // Platform / background scrolling
   const scrollXChange = p.pos.x > scrollStart.right ? p.pos.x - scrollStart.right :
     (p.pos.x < scrollStart.left ? p.pos.x - scrollStart.left : 0);
@@ -218,6 +258,7 @@ function animate() {
     scrollX += scrollXChange;
 
     platforms.forEach(platform => platform.pos.x -= scrollXChange);
+    p.knives.forEach(knife => knife.pos.x -= scrollXChange);
     foreground.pos.x -= scrollXChange / 2;
   }
 
@@ -244,6 +285,7 @@ function animate() {
 
   const deb = document.getElementById('deb');
   deb.innerHTML = 'scrollY ' + scrollY + ' ' + 'scrollX ' + scrollX + ' ' + 'onFloor ' + p.onFloorPlatform + ' ' + 'onAirPlat ' + p.onAirPlatform;
+  deb.innerHTML += ' space: ' + keys.space.pressed;
 
   p.pos.y = Math.max(p.pos.y, 0);
   p.pos.y = Math.min(p.pos.y, canvas.height - p.height - Platform.img.height);
@@ -257,6 +299,9 @@ function animate() {
   foreground.draw();
   platforms.forEach(platform => platform.draw());
   p.draw();
+
+  p.knives.forEach(knife => knife.draw());
+  p.knives = p.knives.filter(knife => knife.distanceTraveled <= scrollXLimit + canvas.width);
 }
 
 const fps = 60;
@@ -264,7 +309,6 @@ const interval = 1000 / fps;
 var then;
 
 function draw(timestamp) {
-
   requestAnimationFrame(draw);
 
   // assign to 'then' for the first run
@@ -341,6 +385,17 @@ addEventListener('keydown', (event) => {
       break;
   }
 
+  switch (event.code) {
+    case 'Space':
+      if (!keys.space.pressed) {
+        keys.space.pressed = true;
+
+        // Create knife
+        p.createKnife();
+      }
+      break;
+  }
+
   // Debug mode
   if (event.key === '.') {
     const deb = document.getElementById('deb');
@@ -373,6 +428,12 @@ addEventListener('keyup', (event) => {
       keys.right.pressed = false;
       idxToRemove = keys.lastPressedStk.indexOf('right');
       keys.lastPressedStk.splice(idxToRemove, 1);
+      break;
+  }
+
+  switch (event.code) {
+    case 'Space':
+      keys.space.pressed = false;
       break;
   }
 });

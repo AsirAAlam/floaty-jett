@@ -224,22 +224,23 @@ function animate() {
       p.pos.y + p.height + p.vel.y >= platform.pos.y &&
       rightX >= platform.pos.x &&
       leftX <= platform.pos.x + Platform.img.width) {
-      p.pos.y = platform.pos.y - p.height;
-      p.vel.y = 0;
-
-      // If this is an air platform and the player is not already on an air platform
-      if (!platform.isFloor && !p.onAirPlatform) {
-        p.onAirPlatform = true;
+        
+        // If this is an air platform and the player is not already on an air platform
+        if (!platform.isFloor && !p.onAirPlatform) {
+          p.onAirPlatform = true;
+        }
+        
+        // If this is a floor platform and the player is not already on a floor platform
+        if (platform.isFloor && !p.onFloorPlatform) {
+          p.onFloorPlatform = true;
       }
-
-      // If this is a floor platform and the player is not already on a floor platform
-      if (platform.isFloor && !p.onFloorPlatform) {
-        p.onFloorPlatform = true;
-      }
-
+      
       if (!p.canAirJump) {
         p.canAirJump = true;
       }
+
+      p.pos.y = platform.pos.y - p.height;
+      p.vel.y = 0;
     }
   });
 
@@ -250,7 +251,7 @@ function animate() {
     knife.update();
   });
 
-  // Platform / background scrolling
+  // Horizontal scrolling
   const scrollXChange = p.pos.x > scrollStart.right ? p.pos.x - scrollStart.right :
     (p.pos.x < scrollStart.left ? p.pos.x - scrollStart.left : 0);
 
@@ -269,6 +270,7 @@ function animate() {
   p.pos.x = Math.max(p.pos.x, 0);
   p.pos.x = Math.min(p.pos.x, canvas.width - p.width);
 
+  // Vertical scrolling
   const scrollYChange = p.pos.y < scrollStart.up ? p.pos.y - scrollStart.up :
     (p.pos.y > scrollStart.down ? p.pos.y - scrollStart.down : 0);
 
@@ -283,9 +285,11 @@ function animate() {
     p.pos.y -= scrollYChange;
   }
 
+  // Debug mode
   const deb = document.getElementById('deb');
   deb.innerHTML = 'scrollY ' + scrollY + ' ' + 'scrollX ' + scrollX + ' ' + 'onFloor ' + p.onFloorPlatform + ' ' + 'onAirPlat ' + p.onAirPlatform;
   deb.innerHTML += ' space: ' + keys.space.pressed;
+  deb.innerHTML += ' knives: ' + p.knives.length;
 
   p.pos.y = Math.max(p.pos.y, 0);
   p.pos.y = Math.min(p.pos.y, canvas.height - p.height - Platform.img.height);
@@ -439,7 +443,6 @@ addEventListener('keyup', (event) => {
 });
 
 addEventListener('keydown', () => {
-  document.getElementById('instructions').style.display = "none";
   var audio = new Audio('./audio/valorant-ascent-map-theme-music.mp3');
   audio.play();
 

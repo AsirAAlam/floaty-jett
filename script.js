@@ -9,6 +9,10 @@ const backgroundImg = new Image();
 backgroundImg.src = './images/ascent/ascent background-min.png';
 const foregroundImg = new Image();
 foregroundImg.src = './images/ascent/ascent foreground-min.png';
+const botRightImg = new Image();
+botRightImg.src = './images/bot/bot-right.png';
+const botLeftImg = new Image();
+botLeftImg.src = './images/bot/bot-left.png';
 const knifeRightImg = new Image();
 knifeRightImg.src = './images/jett/knife-right.png';
 const knifeLeftImg = new Image();
@@ -17,8 +21,8 @@ const jettFloatRight = new Image();
 jettFloatRight.src = './images/jett/jett-float-right.png';
 const jettFloatLeft = new Image();
 jettFloatLeft.src = './images/jett/jett-float-left.png';
-const spriteStand = new Image();
-spriteStand.src = './images/jett/jett-sprite.png';
+const jettSpriteStand = new Image();
+jettSpriteStand.src = './images/jett/jett-sprite.png';
 let spriteAnimationSpeed = 15; // Larger value = slower animation
 
 const gravity = 0.75;
@@ -82,7 +86,7 @@ class Player {
   static playerJump = 20;
   static driftGravityReduction = 0.7;
 
-  // Must be divisible by scrollXLimit
+  // Must divide scrollXLimit
   static playerSpeed = 10;
 
   constructor() {
@@ -120,7 +124,7 @@ class Player {
       c.drawImage(jettFloatImg, 0, 0, 128, 128, this.pos.x, this.pos.y, this.width, this.height);
     } else {
       const spriteRowIndex = this.facing == 'right' ? 0 : 1;
-      c.drawImage(spriteStand, Math.floor(this.frameIndex / spriteAnimationSpeed) * 128, spriteRowIndex * 128, 128, 128, this.pos.x, this.pos.y, this.width, this.height);
+      c.drawImage(jettSpriteStand, Math.floor(this.frameIndex / spriteAnimationSpeed) * 128, spriteRowIndex * 128, 128, 128, this.pos.x, this.pos.y, this.width, this.height);
     }
   }
 
@@ -164,15 +168,82 @@ class Player {
   }
 }
 
+class Bot {
+  // Must divide scrollXLimit
+  static speed = 3;
+  static turnTime = 150;
+
+  constructor(x, y) {
+    // Must be inside the scroll limits
+    this.pos = {
+      x,
+      y
+    }
+    this.vel = {
+      x: Bot.speed,
+      y: 0
+    }
+    this.width = 128;
+    this.height = 128;
+    this.onAirPlatform = false;
+    this.onFloorPlatform = false;
+    this.facing = 'right';
+    this.stepCounter = 0;
+  }
+
+  createBullet() {
+    this.knives.push(new Knife(this.pos.x + this.width / 2, this.pos.y + this.height / 2, this.facing === 'right' ? 1 : -1));
+  }
+
+  draw() {
+    const img = this.facing == 'right' ? botRightImg : botLeftImg;
+    c.drawImage(img, 0, 0, 128, 128, this.pos.x, this.pos.y, this.width, this.height);
+  }
+
+  update() {
+    if (this.stepCounter === Bot.turnTime) {
+      this.stepCounter = 0;
+      this.facing = this.facing === 'right' ? 'left' : 'right';
+      this.vel.x = this.facing === 'left' ? -Bot.speed : Bot.speed;
+    }
+
+    this.pos.x += this.vel.x;
+    this.stepCounter++;
+
+    if (this.onAirPlatform && this.vel.y !== 0) {
+      this.onAirPlatform = false;
+    }
+
+    if (this.onFloorPlatform && this.vel.y !== 0) {
+      this.onFloorPlatform = false;
+    }
+
+    // Vertical movement + gravity
+    if (this.pos.y + this.height + this.vel.y < canvas.height) {
+      this.pos.y += this.vel.y;
+      this.vel.y += gravity;
+    }
+  }
+}
+
+const bots = [];
+
 class Platform {
   static img = platformImg;
 
-  constructor(x, y, isFloor = false) {
+  constructor(x, y, isFloor = false, spawnBot = false) {
     this.pos = {
       x,
       y
     }
     this.isFloor = isFloor;
+
+    this.bot = null;
+
+    if (spawnBot) {
+      this.bot = new Bot(x, y - 128);
+      bots.push(this.bot);
+    }
   }
 
   draw() {
@@ -196,15 +267,17 @@ class GenericObject {
 
 const p = new Player();
 
+
 const platforms = [
-  new Platform(600, 400),
-  new Platform(1200, 150),
-  new Platform(2000, 150),
+  new Platform(600, 400, false, true),
+  new Platform(1200, 150, false, Math.random() < 0.5),
+  new Platform(2000, 150, false, Math.random() < 0.5),
 ];
 
 const background = new GenericObject(0, 0, backgroundImg);
 const foreground = new GenericObject(0, 0, foregroundImg);
 
+// Create floor platforms
 Platform.img.onload = () => {
   scrollStart.down = canvas.height - Platform.img.height - p.height;
   const numFloorPlatforms = 15;
@@ -215,15 +288,15 @@ Platform.img.onload = () => {
 
 function animate() {
   // The offsets are there to only include the character and not the knives for platform collision
-  const leftX = p.pos.x + (p.facing === 'right' ? 40 : 38);
-  const rightX = p.pos.x + p.width - (p.facing === 'right' ? 38 : 40);
+  const playerLeftX = p.pos.x + (p.facing === 'right' ? 40 : 38);
+  const playerRightX = p.pos.x + p.width - (p.facing === 'right' ? 38 : 40);
 
   // Platform collision
   platforms.forEach(platform => {
     if (p.pos.y + p.height <= platform.pos.y &&
       p.pos.y + p.height + p.vel.y >= platform.pos.y &&
-      rightX >= platform.pos.x &&
-      leftX <= platform.pos.x + Platform.img.width) {
+      playerRightX >= platform.pos.x &&
+      playerLeftX <= platform.pos.x + Platform.img.width) {
         
         // If this is an air platform and the player is not already on an air platform
         if (!platform.isFloor && !p.onAirPlatform) {
@@ -242,8 +315,34 @@ function animate() {
       p.pos.y = platform.pos.y - p.height;
       p.vel.y = 0;
     }
-  });
 
+    bots.forEach(bot => {
+      const botLeftX = bot.pos.x + (bot.facing === 'right' ? 40 : 38);
+      const botRightX = bot.pos.x + bot.width - (bot.facing === 'right' ? 38 : 40);
+
+      if (bot.pos.y + bot.height <= platform.pos.y &&
+        bot.pos.y + bot.height + bot.vel.y >= platform.pos.y &&
+        botRightX >= platform.pos.x &&
+        botLeftX <= platform.pos.x + Platform.img.width) {
+          
+          // If this is an air platform and the player is not already on an air platform
+          if (!platform.isFloor && !p.onAirPlatform) {
+            bot.onAirPlatform = true;
+          }
+          
+          // If this is a floor platform and the player is not already on a floor platform
+          if (platform.isFloor && !p.onFloorPlatform) {
+            bot.onFloorPlatform = true;
+        }
+  
+        bot.pos.y = platform.pos.y - p.height;
+        bot.vel.y = 0;
+      }
+    });
+    
+  });
+  
+  bots.forEach(bot => bot.update());
   p.update();
 
   // Update knives
@@ -260,6 +359,7 @@ function animate() {
 
     platforms.forEach(platform => platform.pos.x -= scrollXChange);
     p.knives.forEach(knife => knife.pos.x -= scrollXChange);
+    bots.forEach(bot => bot.pos.x -= scrollXChange);
     foreground.pos.x -= scrollXChange / 2;
   }
 
@@ -279,6 +379,7 @@ function animate() {
 
     platforms.forEach(platform => platform.pos.y -= scrollYChange);
     foreground.pos.y -= scrollYChange;
+    bots.forEach(bot => bot.pos.y -= scrollYChange);
   }
 
   if (scrollY < 0 && scrollY > scrollYLimit) {
@@ -302,6 +403,7 @@ function animate() {
   background.draw();
   foreground.draw();
   platforms.forEach(platform => platform.draw());
+  bots.forEach(bot => bot.draw());
   p.draw();
 
   p.knives.forEach(knife => knife.draw());

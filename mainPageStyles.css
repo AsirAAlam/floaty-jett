@@ -1,0 +1,14 @@
+body {
+  background-color: rgb(209, 244, 255);
+}
+
+.mainDiv {
+  display: flex;
+  justify-content: center;
+}
+
+h1 {
+  padding-top: 5%;
+  color: rgb(0, 80, 106);
+  text-align: center;
+}

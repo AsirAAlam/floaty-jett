@@ -3,6 +3,8 @@ const c = canvas.getContext('2d');
 canvas.width = 1280;
 canvas.height = 720;
 
+const fps = 60;
+
 const platformImg = new Image();
 platformImg.src = './images/ascent/ascent platform.png';
 const backgroundImg = new Image();
@@ -23,12 +25,12 @@ const jettFloatLeft = new Image();
 jettFloatLeft.src = './images/jett/jett-float-left.png';
 const jettSpriteStand = new Image();
 jettSpriteStand.src = './images/jett/jett-sprite.png';
-let spriteAnimationSpeed = 15; // Larger value = slower animation
+let spriteAnimationSpeed = 16; // Larger value = slower animation
 
 const gravity = 0.75;
-const scrollXLimit = 6000;
+const scrollXLimit = 4096;
 var scrollX = 0;
-const scrollYLimit = -1000;
+const scrollYLimit = -1024;
 var scrollY = 0;
 
 var debug = false;
@@ -36,7 +38,7 @@ var debug = false;
 const scrollStart = {
   left: Math.floor(canvas.width / 8),
   right: Math.floor(canvas.width / 2),
-  up: Math.floor(canvas.height / 7),
+  up: Math.floor(canvas.height / 8),
   down: canvas.height
 }
 
@@ -60,7 +62,7 @@ const keys = {
 }
 
 class Knife {
-  static velx = 30;
+  static velx = 32;
 
   // dir -> {-1, 1}
   constructor(x, y, dir) {
@@ -87,7 +89,7 @@ class Player {
   static driftGravityReduction = 0.7;
 
   // Must divide scrollXLimit
-  static playerSpeed = 10;
+  static playerSpeed = 8;
 
   constructor() {
     // Must be inside the scroll limits
@@ -170,8 +172,8 @@ class Player {
 
 class Bot {
   // Must divide scrollXLimit
-  static speed = 3;
-  static turnTime = 150;
+  static speed = 2;
+  static turnTime = 256;
 
   constructor(x, y) {
     // Must be inside the scroll limits
@@ -269,9 +271,9 @@ const p = new Player();
 
 
 const platforms = [
-  new Platform(600, 400, false, true),
-  new Platform(1200, 150, false, Math.random() < 0.5),
-  new Platform(2000, 150, false, Math.random() < 0.5),
+  new Platform(256, 400, false, true),
+  new Platform(1024, 256, false, Math.random() < 0.5),
+  new Platform(2048, 256, false, Math.random() < 0.5),
 ];
 
 const background = new GenericObject(0, 0, backgroundImg);
@@ -280,7 +282,7 @@ const foreground = new GenericObject(0, 0, foregroundImg);
 // Create floor platforms
 Platform.img.onload = () => {
   scrollStart.down = canvas.height - Platform.img.height - p.height;
-  const numFloorPlatforms = 15;
+  const numFloorPlatforms = 16;
   for (let i = 0; i < numFloorPlatforms; i++) {
     platforms.push(new Platform(i * Platform.img.width - 2 * i - 1, canvas.height - Platform.img.height, true));
   }
@@ -297,17 +299,17 @@ function animate() {
       p.pos.y + p.height + p.vel.y >= platform.pos.y &&
       playerRightX >= platform.pos.x &&
       playerLeftX <= platform.pos.x + Platform.img.width) {
-        
-        // If this is an air platform and the player is not already on an air platform
-        if (!platform.isFloor && !p.onAirPlatform) {
-          p.onAirPlatform = true;
-        }
-        
-        // If this is a floor platform and the player is not already on a floor platform
-        if (platform.isFloor && !p.onFloorPlatform) {
-          p.onFloorPlatform = true;
+
+      // If this is an air platform and the player is not already on an air platform
+      if (!platform.isFloor && !p.onAirPlatform) {
+        p.onAirPlatform = true;
       }
-      
+
+      // If this is a floor platform and the player is not already on a floor platform
+      if (platform.isFloor && !p.onFloorPlatform) {
+        p.onFloorPlatform = true;
+      }
+
       if (!p.canAirJump) {
         p.canAirJump = true;
       }
@@ -324,24 +326,24 @@ function animate() {
         bot.pos.y + bot.height + bot.vel.y >= platform.pos.y &&
         botRightX >= platform.pos.x &&
         botLeftX <= platform.pos.x + Platform.img.width) {
-          
-          // If this is an air platform and the player is not already on an air platform
-          if (!platform.isFloor && !p.onAirPlatform) {
-            bot.onAirPlatform = true;
-          }
-          
-          // If this is a floor platform and the player is not already on a floor platform
-          if (platform.isFloor && !p.onFloorPlatform) {
-            bot.onFloorPlatform = true;
+
+        // If this is an air platform and the player is not already on an air platform
+        if (!platform.isFloor && !p.onAirPlatform) {
+          bot.onAirPlatform = true;
         }
-  
+
+        // If this is a floor platform and the player is not already on a floor platform
+        if (platform.isFloor && !p.onFloorPlatform) {
+          bot.onFloorPlatform = true;
+        }
+
         bot.pos.y = platform.pos.y - p.height;
         bot.vel.y = 0;
       }
     });
-    
+
   });
-  
+
   bots.forEach(bot => bot.update());
   p.update();
 
@@ -351,8 +353,13 @@ function animate() {
   });
 
   // Horizontal scrolling
-  const scrollXChange = p.pos.x > scrollStart.right ? p.pos.x - scrollStart.right :
-    (p.pos.x < scrollStart.left ? p.pos.x - scrollStart.left : 0);
+  let scrollXChange = 0;
+
+  if (p.pos.x + p.width > scrollStart.right) {
+    scrollXChange = p.pos.x + p.width - scrollStart.right;
+  } else if (p.pos.x < scrollStart.left) {
+    scrollXChange = p.pos.x - scrollStart.left;
+  }
 
   if (scrollX + scrollXChange >= 0 && scrollX + scrollXChange <= scrollXLimit) {
     scrollX += scrollXChange;
@@ -410,7 +417,6 @@ function animate() {
   p.knives = p.knives.filter(knife => knife.distanceTraveled <= scrollXLimit + canvas.width);
 }
 
-const fps = 60;
 const interval = 1000 / fps;
 var then;
 
